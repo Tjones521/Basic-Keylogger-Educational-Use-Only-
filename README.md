@@ -10,6 +10,16 @@ It demonstrates how keystrokes can be captured and stored locally.
 - Saves to `key_log.txt`
 - Stops logging when ESC is pressed
 
+<h2>Languages and Utilities Used</h2>
+
+- <b>Virtual Machine</b>  
+- <b>Python</b> 
+
+
+<h2>Environments Used </h2>
+
+- <b>Windows 10</b>
+
 ## Legal Disclaimer
 This tool is for educational purposes only. The author is not responsible for misuse.
 
