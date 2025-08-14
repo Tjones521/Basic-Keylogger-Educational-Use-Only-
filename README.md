@@ -10,6 +10,9 @@ It demonstrates how keystrokes can be captured and stored locally.
 - Saves to `key_log.txt`
 - Stops logging when ESC is pressed
 
+## Legal Disclaimer
+This tool is for educational purposes only. The author is not responsible for misuse.
+
 ## Installation
 ```bash
 git clone https://github.com/Tjones521/basic-keylogger.git
@@ -20,7 +23,3 @@ pip install pynput
 python keylogger.py
 
 
-
-## Legal Disclaimer
-
-This tool is for educational purposes only. The author is not responsible for misuse.
