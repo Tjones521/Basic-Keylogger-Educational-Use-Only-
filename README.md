@@ -6,8 +6,11 @@ It demonstrates how keystrokes can be captured and stored locally.
 **Not for malicious use** — running this on devices without permission is illegal.
 
 ## Features
-- Logs all keys pressed
-- Saves to `key_log.txt`
+- Window-only logging (no global hooks)
+- Explicit Start/Stop recording
+- Recording indicator
+- Optional masking of letters/digits
+- Saves to `keystrokes.log`
 - Stops logging when ESC is pressed
 
 <h2>Languages and Utilities Used</h2>
@@ -31,5 +34,9 @@ python3 -m venv venv
 source venv/bin/activate
 pip install pynput
 python keylogger.py
+```
 
+## Quickstart
+```bash
+python visualizer.py
 
