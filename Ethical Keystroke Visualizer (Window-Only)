@@ -1,0 +1,176 @@
+#Project scaffold
+mkdir keystroke-visualizer && cd keystroke-visualizer
+touch visualizer.py README.md LICENSE .gitignore
+
+#.gitignore (keep the repo tidy)
+cat > .gitignore << 'EOF'
+__pycache__/
+*.log
+.venv/
+.DS_Store
+.vscode/
+.idea/
+EOF
+
+#The app (Python, standard library only)
+
+Captures key presses only when the app window is focused
+
+Requires clicking Start Recording (explicit consent)
+
+Shows a clear Recording ON indicator
+
+Logs key names (not raw text), and you can mask letters/digits for privacy
+
+Saves to keystrokes.log in the app folder (when enabled)
+
+# visualizer.py
+import tkinter as tk
+from tkinter import ttk, messagebox
+from datetime import datetime
+
+APP_TITLE = "Keystroke Visualizer (Ethical, Window-Only)"
+
+class Visualizer(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title(APP_TITLE)
+        self.geometry("720x480")
+        self.minsize(640, 420)
+
+        # State
+        self.recording = tk.BooleanVar(value=False)
+        self.mask_sensitive = tk.BooleanVar(value=True)  # mask letters/digits by default
+        self.has_focus = tk.BooleanVar(value=False)
+
+        self._build_ui()
+        self._bind_events()
+
+    def _build_ui(self):
+        # Top bar
+        top = ttk.Frame(self, padding=10)
+        top.pack(side=tk.TOP, fill=tk.X)
+
+        self.status_lbl = ttk.Label(
+            top, text="Recording OFF",
+            foreground="red",
+            font=("TkDefaultFont", 11, "bold")
+        )
+        self.status_lbl.pack(side=tk.LEFT)
+
+        ttk.Separator(top, orient="vertical").pack(side=tk.LEFT, fill=tk.Y, padx=10)
+
+        ttk.Checkbutton(
+            top, text="Mask letters/digits", variable=self.mask_sensitive
+        ).pack(side=tk.LEFT, padx=4)
+
+        ttk.Separator(top, orient="vertical").pack(side=tk.LEFT, fill=tk.Y, padx=10)
+
+        self.start_btn = ttk.Button(top, text="Start Recording", command=self.toggle_recording)
+        self.start_btn.pack(side=tk.LEFT, padx=4)
+
+        ttk.Button(top, text="Clear", command=self.clear_log).pack(side=tk.LEFT, padx=4)
+        ttk.Button(top, text="About", command=self.show_about).pack(side=tk.LEFT, padx=4)
+
+        # Focus indicator
+        self.focus_lbl = ttk.Label(top, text="Window Focus: NO", foreground="gray")
+        self.focus_lbl.pack(side=tk.RIGHT)
+
+        # Log area
+        body = ttk.Frame(self, padding=(10, 0, 10, 10))
+        body.pack(fill=tk.BOTH, expand=True)
+
+        self.text = tk.Text(body, height=20, wrap="none")
+        self.text.pack(fill=tk.BOTH, expand=True)
+        self.text.configure(state="disabled")
+
+        # Footer
+        footer = ttk.Frame(self, padding=10)
+        footer.pack(side=tk.BOTTOM, fill=tk.X)
+        ttk.Label(
+            footer,
+            text="Ethical use only. This app logs keys only while its own window is focused and the user has enabled recording."
+        ).pack(side=tk.LEFT)
+
+    def _bind_events(self):
+        # Key events on the root window (only fire when focused)
+        self.bind("<KeyPress>", self.on_keypress)
+        self.bind("<FocusIn>", lambda e: self.update_focus(True))
+        self.bind("<FocusOut>", lambda e: self.update_focus(False))
+
+        # Also update focus label periodically
+        self.after(250, self._tick)
+
+    def _tick(self):
+        self.update_focus(self.focus_displayof() is not None)
+        self.after(250, self._tick)
+
+    def update_focus(self, focused: bool):
+        self.has_focus.set(bool(focused))
+        if self.has_focus.get():
+            self.focus_lbl.configure(text="Window Focus: YES", foreground="green")
+        else:
+            self.focus_lbl.configure(text="Window Focus: NO", foreground="gray")
+
+    def toggle_recording(self):
+        self.recording.set(not self.recording.get())
+        if self.recording.get():
+            self.status_lbl.configure(text="Recording ON", foreground="green")
+            self.start_btn.configure(text="Stop Recording")
+        else:
+            self.status_lbl.configure(text="Recording OFF", foreground="red")
+            self.start_btn.configure(text="Start Recording")
+
+    def clear_log(self):
+        self.text.configure(state="normal")
+        self.text.delete("1.0", tk.END)
+        self.text.configure(state="disabled")
+
+    def show_about(self):
+        message = (
+            f"{APP_TITLE}\n\n"
+            "This educational app demonstrates ethical input logging in a controlled window-only context.\n"
+            "• Logs are recorded only when this window has focus and recording is toggled ON.\n"
+            "• Masking helps avoid collecting sensitive text.\n"
+            "• Use only with informed consent."
+        )
+        messagebox.showinfo("About", message)
+
+    def on_keypress(self, event: tk.Event):
+        # Only record when: app focused AND recording enabled
+        if not (self.has_focus.get() and self.recording.get()):
+            return
+
+        # Build a safe representation of the key
+        key_name = event.keysym  # e.g., 'a', 'Shift_L', 'Return'
+        display = key_name
+
+        if self.mask_sensitive.get():
+            # Mask single letter/digit keys to avoid recording actual content
+            if len(key_name) == 1 and key_name.isalnum():
+                display = "[MASKED]"
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        line = f"{timestamp}  {display}\n"
+
+        # Append to UI log
+        self.text.configure(state="normal")
+        self.text.insert(tk.END, line)
+        self.text.see(tk.END)
+        self.text.configure(state="disabled")
+
+        # Append to file
+        try:
+            with open("keystrokes.log", "a", encoding="utf-8") as f:
+                f.write(line)
+        except Exception as e:
+            # Non-fatal—just surface in UI
+            self.text.configure(state="normal")
+            self.text.insert(tk.END, f"[Error writing log: {e}]\n")
+            self.text.configure(state="disabled")
+
+if __name__ == "__main__":
+    app = Visualizer()
+    app.mainloop()
+
+
