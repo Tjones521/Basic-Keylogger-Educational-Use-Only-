@@ -26,16 +26,6 @@ It demonstrates how keystrokes can be captured and stored locally.
 ## Legal Disclaimer
 This tool is for educational purposes only. The author is not responsible for misuse.
 
-## Installation
-```bash
-git clone https://github.com/Tjones521/basic-keylogger.git
-cd basic-keylogger
-python3 -m venv venv
-source venv/bin/activate
-pip install pynput
-python keylogger.py
-```
-
 ## Quickstart
 ```bash
 python visualizer.py
