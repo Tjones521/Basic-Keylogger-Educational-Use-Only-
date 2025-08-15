@@ -19,7 +19,6 @@ It demonstrates how keystrokes can be captured and stored locally.
 <h2>Environments Used </h2>
 
 - <b>Windows 10</b>
-- <b>MacOS</b>
 
 ## Legal Disclaimer
 This tool is for educational purposes only. The author is not responsible for misuse.
